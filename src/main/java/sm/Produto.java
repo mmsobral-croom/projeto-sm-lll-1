@@ -46,5 +46,9 @@ public class Produto {
 
                 return pb.build();
         }
+//        @Override
+//        public String toString() {
+//                return nome + " - R$ " + preco;
+//        }
 
 }
