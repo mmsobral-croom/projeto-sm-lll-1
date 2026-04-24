@@ -21,7 +21,7 @@ public class Supermercado {
 
     public Supermercado(String url)  {
         cliente = HttpClient.newHttpClient();
-        this.url = url+ "/api/catalog_system/pub/products/search/";
+        this.url = url + "/api/catalog_system/pub/products/search/";
     }
 
     public ListaSequencial<Produto> busca(String produto) throws URISyntaxException {
@@ -35,7 +35,8 @@ public class Supermercado {
         ListaSequencial<Produto> r = new ListaSequencial<>();
         try {
             HttpResponse<String> response = cliente.send(req, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() == 200) {
+            int statusCode = response.statusCode();
+            if (statusCode == 200 || statusCode == 206) {
                 var headers = response.headers().map();
                 boolean isJson = headers.get("content-type").stream().anyMatch(x -> x.startsWith("application/json"));
                 if (isJson) {
