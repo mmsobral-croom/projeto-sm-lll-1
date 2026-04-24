@@ -67,7 +67,8 @@ public class Supermercado {
         Produto prod = null;
         try {
             HttpResponse<String> response = cliente.send(req, HttpResponse.BodyHandlers.ofString());
-            if (response.statusCode() == 200) {
+            int statusCode = response.statusCode();
+            if (statusCode == 200 || statusCode == 206) {
                 var headers = response.headers().map();
                 boolean isJson = headers.get("content-type").stream().anyMatch(x -> x.startsWith("application/json"));
                 if (isJson) {
