@@ -1,16 +1,15 @@
 import esd.ListaSequencial;
-import sm.Bistek;
-import sm.Fort;
-import sm.Giassi;
+import sm.*;
 
+import java.net.URISyntaxException;
 import java.util.Scanner;
 
 public class Main {
-    static Giassi sm = new Giassi();
+    static Giassi giassi = new Giassi();
     static Fort fort = new Fort();
     static Bistek bistek = new Bistek();
 
-    static void main(String[] args) {
+    public static void main(String[] args) {
         Scanner inp = new Scanner(System.in);
         ListaSequencial<String> listaNomeProdutos = new ListaSequencial<>();
         boolean continuar = true;
@@ -43,10 +42,30 @@ public class Main {
                 }
             }
         }
-        // procura todos produtos cujo nome contenha "tapioca"
-//        ListaSequencial<Produto> produtos = sm.busca("leite");
-//        ListaSequencial<Produto> produtosFort = fort.busca("leite");
-//        ListaSequencial<Produto> produtosBistek = bistek.busca("leite");
+    }
 
+    private static ListaSequencial<Produto> criarCestaCompra(Supermercado mercado, ListaSequencial<String> listaNomeProdutos) throws URISyntaxException {
+        ListaSequencial<Produto> cestaCompra = new ListaSequencial<>();
+
+        for (int i = 0; i < listaNomeProdutos.comprimento(); i++) {
+            String nomeProduto = listaNomeProdutos.obtem(i);
+            ListaSequencial<Produto> listaProdutosEncontrados = mercado.busca(nomeProduto);
+
+            Produto maisBarato = null;
+
+            for (int j = 0; j < listaProdutosEncontrados.comprimento(); j++) {
+                Produto atual = listaProdutosEncontrados.obtem(j);
+
+                if (!atual.isDisponivel()) continue;
+                if (maisBarato == null || atual.getPreco() < maisBarato.getPreco()) {
+                    maisBarato = atual;
+                }
+            }
+            if (maisBarato != null) {
+                cestaCompra.adiciona(maisBarato);
+            }
+        }
+
+        return cestaCompra;
     }
 }
