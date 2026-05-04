@@ -1,6 +1,5 @@
 package esd;
 
-
 import java.util.Objects;
 import java.util.Random;
 
@@ -281,6 +280,16 @@ public class ListaSequencial<T> {
             T temp = area[i];
             area[i] = area[j];
             area[j] = temp;
+        }
+    }
+
+    public void listarElementos() {
+        if (esta_vazia()) {
+            IO.println("Lista está vazia");
+            return;
+        }
+        for (int i = 0; i < this.comprimento(); i++) {
+            IO.println(area[i]);
         }
     }
 }

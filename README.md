@@ -45,7 +45,7 @@ public class Main {
 
 ## Ordem de implementação
 
-1. Usuário informa todos os produtos desejados no seguinte método
+1. Usuário informa todos os produtos desejados no seguinte método -> **Feito**
 ```java
    void main() {
     //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
@@ -80,7 +80,7 @@ public class Main {
     }
 }
 ```
-2. Sistema efetua um `lop` para buscar todos os produtos da lista em **cada** mercado
+2. Sistema efetua um `loop` para buscar todos os produtos da lista em **cada** mercado
    - Se produtos achados > 1 pegar o de menor preço entre os listados
 3. Somar o preço de todos os produtos na lista
 4. Fazer a comparação
