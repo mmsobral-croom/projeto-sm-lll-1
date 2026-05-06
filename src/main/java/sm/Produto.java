@@ -11,6 +11,7 @@ public class Produto {
         String id;
         String marca;
         float preco;
+        String ean;
         boolean disponivel;
 
 
@@ -25,9 +26,17 @@ public class Produto {
 
         static Produto.ProdutoBuilder fromJsonBuilder(JSONObject obj) {
                 Produto.ProdutoBuilder pb = Produto.builder()
-                        .nome((String) obj.get("productName"))
-                        .id((String) obj.get("productId"))
-                        .marca((String) obj.get("brand"));
+                        .nome((String)obj.get("productName"))
+                        .id((String)obj.get("productId"))
+                        .marca((String)obj.get("brand"));
+                try {
+                        JSONArray items = obj.getJSONArray("items");
+                        JSONObject item = items.getJSONObject(0);
+                        String ean = item.getString("ean");
+                        pb.ean(ean);
+                } catch (Exception e) {
+//                        IO.println(e);
+                }
                 try {
                         JSONObject offer = Produto.getOffer(obj);
                         float preco = offer.getBigDecimal("Price").floatValue();
@@ -38,7 +47,6 @@ public class Produto {
 //                        IO.println(e);
                 }
                 return pb;
-
         }
 
         static Produto fromJson(JSONObject obj) {
@@ -46,10 +54,5 @@ public class Produto {
 
                 return pb.build();
         }
-//        @Override
-//        public String toString() {
-//                return nome + " - R$ " + preco;
-//        }
-
 
 }

@@ -1,7 +1,6 @@
 import esd.ListaSequencial;
 import sm.*;
 
-import java.net.URISyntaxException;
 import java.util.Scanner;
 
 public class Main {
@@ -11,7 +10,7 @@ public class Main {
     static ListaSequencial<Produto>[] arrayListas;
     static String[] nomesMercados = {"Giassi", "Fort", "Bistek"};
 
-    public static void main(String[] args) throws URISyntaxException {
+    public static void main(String[] args) {
         Scanner inp = new Scanner(System.in);
         ListaSequencial<String> listaNomeProdutos = new ListaSequencial<>();
         boolean continuar = true;
@@ -43,7 +42,6 @@ public class Main {
                     ordenarPorPreco(arrayListas, nomesOrdenados);
                     mostrarOrdenado(arrayListas, nomesOrdenados);
 
-                    IO.println("Aqui vai ser chamado o metodo");
                     continuar = false;
                 }
                 default -> {
@@ -53,18 +51,19 @@ public class Main {
         }
     }
 
-    private static ListaSequencial<Produto> criarCestaCompra(Supermercado mercado, ListaSequencial<String> listaNomeProdutos) throws URISyntaxException {
+    private static ListaSequencial<Produto> criarCestaCompra(Supermercado mercado, ListaSequencial<String> listaNomeProdutos) {
         ListaSequencial<Produto> cestaCompra = new ListaSequencial<>();
 
         for (int i = 0; i < listaNomeProdutos.comprimento(); i++) {
             String nomeProduto = listaNomeProdutos.obtem(i);
-            ListaSequencial<Produto> listaProdutosEncontrados = mercado.busca(nomeProduto);
+
+            Supermercado.Resultado resultado = mercado.busca(nomeProduto);
+
+            if (resultado == null) continue;
 
             Produto maisBarato = null;
 
-            for (int j = 0; j < listaProdutosEncontrados.comprimento(); j++) {
-                Produto atual = listaProdutosEncontrados.obtem(j);
-
+            for (Produto atual : resultado) {
                 if (!atual.isDisponivel()) continue;
                 if (maisBarato == null || atual.getPreco() < maisBarato.getPreco()) {
                     maisBarato = atual;
@@ -86,7 +85,7 @@ public class Main {
         return total;
     }
 
-    private static void criarListasSupermercados(ListaSequencial<String> listaNomeProdutos) throws URISyntaxException {
+    private static void criarListasSupermercados(ListaSequencial<String> listaNomeProdutos) {
         Supermercado[] mercados = {giassi, fort, bistek};
         for (int i = 0; i < mercados.length; i++) {
             arrayListas[i] = criarCestaCompra(mercados[i], listaNomeProdutos);
