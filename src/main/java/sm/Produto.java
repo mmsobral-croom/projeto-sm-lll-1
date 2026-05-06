@@ -25,9 +25,9 @@ public class Produto {
 
         static Produto.ProdutoBuilder fromJsonBuilder(JSONObject obj) {
                 Produto.ProdutoBuilder pb = Produto.builder()
-                        .nome((String)obj.get("productName"))
-                        .id((String)obj.get("productId"))
-                        .marca((String)obj.get("brand"));
+                        .nome((String) obj.get("productName"))
+                        .id((String) obj.get("productId"))
+                        .marca((String) obj.get("brand"));
                 try {
                         JSONObject offer = Produto.getOffer(obj);
                         float preco = offer.getBigDecimal("Price").floatValue();
@@ -46,5 +46,10 @@ public class Produto {
 
                 return pb.build();
         }
+//        @Override
+//        public String toString() {
+//                return nome + " - R$ " + preco;
+//        }
+
 
 }
