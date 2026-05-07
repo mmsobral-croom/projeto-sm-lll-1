@@ -49,49 +49,6 @@ for (Produto atual : resultado) {
 }
 ```
 
-## Ordem de implementação
-
-1. Usuário informa todos os produtos desejados no seguinte método -> **Feito**
-```java
-   void main() {
-    //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-    // to see how IntelliJ IDEA suggests fixing it.
-    Scanner inp = new Scanner(System.in);
-    String[] fila = new String[32];
-    int clientes = 0;
-    boolean continuar = true;
-
-    while (continuar) {
-        IO.print("> ");
-        String cmd = inp.nextLine();
-        cmd = cmd.strip();
-        switch (cmd) {
-            case "" -> {}
-            case "sair" -> continuar = false;
-            case "?" -> {
-                if (clientes > 0) {
-                    IO.println(fila[0]);
-                    for (int pos=1; pos < clientes; pos++) {
-                        fila[pos-1] = fila[pos];
-                    }
-                    fila[--clientes] = null;
-                }
-            }
-            default -> {
-                if (clientes < fila.length) {
-                    fila[clientes++] = cmd;
-                }
-            }
-        }
-    }
-}
-```
-2. Sistema efetua um `loop` para buscar todos os produtos da lista em **cada** mercado
-   - Se produtos achados > 1 pegar o de menor preço entre os listados
-3. Somar o preço de todos os produtos na lista
-4. Fazer a comparação
-5. Informar o mercado com o menor preço para aquela cesta de compras
-
 ## Como usar
 
 | Comando | Descrição  |
