@@ -1,44 +1,50 @@
 [![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/0aiXsnlU)
 # Projeto 1: Melhor Preço
 
-No projeto 1 sua equipe deve desenvolver um programa que descubra em qual supermercado se pode comprar um conjunto de produtos pelo melhor preço.
+## Descrição
 
-O usuário deve criar uma cesta de compras, e então o preço total dessa cesta deve ser calculado para cada um dos supermercados cadastrados. Ao final, o programa deve mostrar os supermercados e respectivos preços de cesta ordenados pelo preço.
+Este programa permite que o usuário monte uma cesta de compras e descubra em qual supermercado ela sai mais barata. O sistema busca os preços dos produtos em cada supermercado cadastrado, seleciona o item mais barato disponível em cada um, calcula o total da cesta e exibe os mercados ordenados do mais barato ao mais caro.
+Os supermercados cadastrados são:
 
-Os supermercados cadastrados até o momento são:
-* Giassi
-* Bistek
-* Fort Atacadista
+* Giassi — giassi.com.br
 
-Para desenvolver esse software, usem os buscadores de preço disponibilizados neste repositório inicial. Existe um buscador para cada supermercado implementado em uma classe na package _sm_. A interface dos buscadores é a mesma:
+* Bistek — bistek.com.br
 
-* __ListaSequencial\<Produto\> busca(String nome)__: busca todos produtos cujos nomes contenham _nome_. O resultado é uma lista de objetos _Produto_.
-* __Produto obtem(String productId)__: busca a descrição de um produto identificado pelo _productId_. Os valores de _productId_ são específicos de cada supermercado.
+* Fort Atacadista — deliveryfort.com.br
 
-A classe Produto contém a descrição de um produto, e possui os seguintes métodos para acessar as informações:
-* __String nome()__: o nome do produto, conforme definido pelo supermercado 
-* __String id()__: o valor do _productId_ definido pelo supermercado
-* __String marca()__: a marca do produto
-* __float preco()__: o preço do produto
-* __boolean disponivel()__: se o produto está disponível no supermercado
+## Estrutura do projeto
 
-Um exemplo de consulta a produtos de um supermercado está contido em _Main.java_:
+### `Main.java`
+
+Classe responsável pela interação com o usuário e pela lógica de cálculo dos preços. Suas funções são:
+
+* Receber os produtos digitados pelo usuário e armazená-los em uma `ListaSequencial<String>`
+
+* Para cada supermercado, buscar o produto mais barato disponível dentre os resultados e montar uma cesta de compras - `criarCestaCompra`
+  
+* Calcular o preço total de cada cesta - `calcularTotalLista`
+  
+* Ordenar os supermercados pelo preço total - `ordenarPorPreco`
+  
+* Exibir o ranking final - `mostrarOrdenado`
+
+### `Supermercado.java`
+
+Classe base que realiza as requisições HTTP na API dos mercados. Seus principais métodos são:
+
+* `Resultado busca(String nome)`: Busca produtos pelo nome, retornando um objeto `Resultado` iterável
+
+* `Produto obtem(String productID)`: Busca um produto por seu ID pelo
+
+### Lógica de seleção do produto mais barato
+
+Para cada produto da cesta, o sistema busca todos os resultados retornados pelo supermercado e seleciona o de menor preço que esteja disponível. Caso nenhum resultado disponível seja encontrado para um produto em determinado mercado, ele simplesmente não é adicionado à cesta daquele mercado.
 
 ```java
-public class Main {
-    static void main() {
-
-        // cria um acessador para o Giassi
-        Giassi sm = new Giassi();
-
-        // procura todos produtos cujo nome contenha "tapioca"
-        ListaSequencial<Produto> produtos = sm.busca("tapioca");
-
-        // Mostra cada um dos produtos encontrados
-        for (int pos=0; pos < produtos.comprimento(); pos++) {
-            IO.println(produtos.obtem(pos));
-        }
-
+for (Produto atual : resultado) {
+    if (!atual.isDisponivel()) continue;
+    if (maisBarato == null || atual.getPreco() < maisBarato.getPreco()) {
+        maisBarato = atual;
     }
 }
 ```
@@ -85,3 +91,36 @@ public class Main {
 3. Somar o preço de todos os produtos na lista
 4. Fazer a comparação
 5. Informar o mercado com o menor preço para aquela cesta de compras
+
+## Como usar
+
+| Comando | Descrição  |
+| :---: | :---: |
+| (nome do produto) | Adiciona produto à cesta |
+| produtos | Lista os produtos adicionados |
+| ? | Remove o último produto adicionado |
+| calcular | Busca os valores e exibe o resultado ordenado |
+| sair | Encerra o programa |
+
+### Exemplo de uso:
+```
+> arroz
+> feijao
+> azeite
+> produtos
+    arroz
+    feijao
+    azeite
+> calcular
+    1 lugar: Giassi - Total: R$9.65
+    2 lugar: Fort - Total: R$11.25
+    3 lugar: Bistek - Total: R$18.17
+```
+
+## Dependências
+
+* Java 11+
+* `Lombok`
+* `org.json`
+* Classe `ListaSequencial`
+* Classe `IO`
