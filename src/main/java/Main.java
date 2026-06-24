@@ -46,7 +46,11 @@ public class Main {
                     arrayListas = new ListaSequencial[3];
                     String[] nomesOrdenados = nomesMercados.clone();
 
-                    criarListasSupermercados(listaNomeProdutos);
+                    try {
+                        criarListasSupermercados(listaNomeProdutos);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                     ordenarPorPreco(arrayListas, nomesOrdenados);
                     mostrarOrdenado(arrayListas, nomesOrdenados);
 
@@ -100,7 +104,7 @@ public class Main {
                 }
             }
 
-            Produto maisBarato = null; //parte de produto mais barato nao foi alterada
+            Produto maisBarato = null;
             for (int j = 0; j < produtosEncontrados.comprimento(); j++) {
                 Produto atual = produtosEncontrados.obtem(j);
                 if (!atual.isDisponivel()) continue;
@@ -108,9 +112,7 @@ public class Main {
                     maisBarato = atual;
                 }
             }
-            if (maisBarato != null) {
-                cestaCompra.adiciona(maisBarato);
-            }
+            cestaCompra.adiciona(maisBarato);
         }
 
         return cestaCompra;
@@ -124,11 +126,21 @@ public class Main {
         return total;
     }
 
-    private static void criarListasSupermercados(ListaSequencial<String> listaNomeProdutos ) {
+    private static void criarListasSupermercados(ListaSequencial<String> listaNomeProdutos) throws InterruptedException {
         Supermercado[] mercados = {giassi, fort, bistek};
-        TabHash<String, ListaSequencial<Produto>>[] caches = new TabHash[]{cacheGiassi, cacheFort, cacheBistek};
+        TabHash<String, ListaSequencial<Produto>>[] caches =
+                new TabHash[]{cacheGiassi, cacheFort, cacheBistek};
+        Thread[] threads = new Thread[mercados.length];//usar threads para criar as lista simultaneamente
+                                                       // ao inves de criar uma de cada vez
         for (int i = 0; i < mercados.length; i++) {
-            arrayListas[i] = criarCestaCompra(mercados[i], listaNomeProdutos, caches[i]);
+            final int indice = i;
+            threads[i] = new Thread(() -> {
+                arrayListas[indice] = criarCestaCompra(mercados[indice], listaNomeProdutos, caches[indice]);
+            });
+            threads[i].start();
+        }
+        for (Thread t : threads) {
+            t.join();
         }
     }
 
