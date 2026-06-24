@@ -1,3 +1,4 @@
+import cache.CacheManager;
 import esd.ListaSequencial;
 import sm.*;
 import esd.TabHash;
@@ -11,9 +12,11 @@ public class Main {
     static ListaSequencial<Produto>[] arrayListas;
     static String[] nomesMercados = {"Giassi", "Fort", "Bistek"};
 
-    static TabHash<String, ListaSequencial<Produto>> cacheGiassi = new TabHash<>();
-    static TabHash<String, ListaSequencial<Produto>> cacheFort = new TabHash<>();
-    static TabHash<String, ListaSequencial<Produto>> cacheBistek = new TabHash<>();
+    static TabHash<String, ListaSequencial<Produto>> cacheGiassi = CacheManager.carregar("src/main/java/cache/cache_giassi.json");
+    static TabHash<String, ListaSequencial<Produto>> cacheFort = CacheManager.carregar("src/main/java/cache/cache_fort.json");
+    static TabHash<String, ListaSequencial<Produto>> cacheBistek = CacheManager.carregar("src/main/java/cache/cache_bistek.json");
+
+    TabHash<String, Boolean> adicionados = new TabHash<>();
 
     public static void main(String[] args) {
         Scanner inp = new Scanner(System.in);
@@ -54,6 +57,11 @@ public class Main {
                 }
             }
         }
+
+        //depois de tudo salva no cache json o conteudo das TabHash
+        CacheManager.salvar("src/main/java/cache/cache_giassi.json",  cacheGiassi);
+        CacheManager.salvar("src/main/java/cache/cache_fort.json",    cacheFort);
+        CacheManager.salvar("src/main/java/cache/cache_bistek.json",  cacheBistek);
     }
 
     private static ListaSequencial<Produto> criarCestaCompra(Supermercado mercado, ListaSequencial<String> listaNomeProdutos, TabHash<String, ListaSequencial<Produto>> cache) {
@@ -61,23 +69,34 @@ public class Main {
 
         for (int i = 0; i < listaNomeProdutos.comprimento(); i++) {
             String nomeProduto = listaNomeProdutos.obtem(i);
-
-            ListaSequencial<Produto> produtosEncontrados;
-
-            if (cache.contem(nomeProduto)) {
-                produtosEncontrados = cache.obtem(nomeProduto);
-            } else {
-                Supermercado.Resultado resultado = mercado.busca(nomeProduto);
-                if (resultado == null) continue;
-                produtosEncontrados = new ListaSequencial<>();
-                for (Produto p : resultado) {
-                    produtosEncontrados.adiciona(p);
+            String[] termos = obterTermos(nomeProduto); //separa os termos da busca: "chocolate branco" vira "chocolate" e "branco"
+            ListaSequencial<Produto> produtosEncontrados = null;
+            for (String termo : termos) { //busca no cache ou api cada termo da busca
+                ListaSequencial<Produto> listaTermo;
+                if (cache.contem(termo)) { //verifica no cache se existe senao busca na API
+                    listaTermo = cache.obtem(termo);
+                } else {
+                    Supermercado.Resultado resultado = mercado.busca(termo);
+                    if (resultado == null) {
+                        continue;
+                    }
+                    listaTermo = new ListaSequencial<>();
+                    TabHash<String, Boolean> ids = new TabHash<>();
+                    for (Produto p : resultado) {
+                        if (!ids.contem(p.getId())) { //verifica se o id nao é igual
+                            ids.adiciona(p.getId(), true);
+                            listaTermo.adiciona(p);
+                        }
+                    }
+                    cache.adiciona(termo, listaTermo); //adiciona para o cache os itens encontrados
                 }
-                cache.adiciona(nomeProduto, produtosEncontrados);
+                if (produtosEncontrados == null) {
+                    produtosEncontrados = listaTermo;
+                } else {
+                    produtosEncontrados = intersecao(produtosEncontrados, listaTermo);//faz a intersecao dos termos de busca
+                }
             }
-
-            Produto maisBarato = null;
-
+            Produto maisBarato = null; //parte de produto mais barato nao foi alterada
             for (int j = 0; j < produtosEncontrados.comprimento(); j++) {
                 Produto atual = produtosEncontrados.obtem(j);
                 if (!atual.isDisponivel()) continue;
@@ -133,7 +152,37 @@ public class Main {
     private static void mostrarOrdenado(ListaSequencial<Produto>[] arrayListas, String[] nomes) {
         for (int i = 0; i < arrayListas.length; i++) {
             float total = calcularTotalLista(arrayListas[i]);
-            System.out.println((i + 1) + " lugar: " + nomes[i] + " - Total: R$" + total);
+            IO.println("\n" + (i + 1) + " lugar: " + nomes[i] + " - Total: R$ " + String.format("%.2f", total));
+            for (int j = 0; j < arrayListas[i].comprimento(); j++) {
+                Produto p = arrayListas[i].obtem(j);
+                IO.println("  - " + p.getNome() + " (R$ " + String.format("%.2f", p.getPreco()) + ")");
+            }
         }
+    }
+
+    private static boolean verificaEAN(String string){
+        return string.matches("\\d+");
+    }
+
+    private static String[] obterTermos(String busca) {
+        return busca
+                .toLowerCase()
+                .trim()
+                .split("\\s+");
+    }
+
+    private static ListaSequencial<Produto> intersecao(ListaSequencial<Produto> a, ListaSequencial<Produto> b) {
+        ListaSequencial<Produto> resultado = new ListaSequencial<>();
+        TabHash<String, Boolean> ids = new TabHash<>();
+        for (int i = 0; i < a.comprimento(); i++) {
+            ids.adiciona(a.obtem(i).getId(), true);
+        }
+        for (int i = 0; i < b.comprimento(); i++) {
+            Produto p = b.obtem(i);
+            if (ids.contem(p.getId())) {
+                resultado.adiciona(p);
+            }
+        }
+        return resultado;
     }
 }
