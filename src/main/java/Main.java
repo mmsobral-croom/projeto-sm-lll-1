@@ -82,7 +82,10 @@ public class Main {
                     }
                     listaTermo = new ListaSequencial<>();
                     TabHash<String, Boolean> ids = new TabHash<>();
+                    int limite = 100; //limite para guardar no cache
+                    int cont = 0;
                     for (Produto p : resultado) {
+                        if (++cont>limite) break;
                         if (!ids.contem(p.getId())) { //verifica se o id nao é igual
                             ids.adiciona(p.getId(), true);
                             listaTermo.adiciona(p);
