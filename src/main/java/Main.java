@@ -96,6 +96,7 @@ public class Main {
                     produtosEncontrados = intersecao(produtosEncontrados, listaTermo);//faz a intersecao dos termos de busca
                 }
             }
+
             Produto maisBarato = null; //parte de produto mais barato nao foi alterada
             for (int j = 0; j < produtosEncontrados.comprimento(); j++) {
                 Produto atual = produtosEncontrados.obtem(j);
@@ -129,21 +130,25 @@ public class Main {
     }
 
     private static void ordenarPorPreco(ListaSequencial<Produto>[] arrayListas, String[] mercados) {
-        for (int i = 0; i < arrayListas.length - 1; i++) {
-            for (int j = 0; j < arrayListas.length - 1 - i; j++) {
+        float[] totais = new float[arrayListas.length];
 
-                float totalAtual = calcularTotalLista(arrayListas[j]);
-                float totalProximo = calcularTotalLista(arrayListas[j + 1]);
+        for (int i = 0; i < arrayListas.length; i++) {
+            totais[i] = calcularTotalLista(arrayListas[i]);
+        }
+        for (int i = 0; i < totais.length - 1; i++) {
+            for (int j = 0; j < totais.length - 1 - i; j++) {
+                if (totais[j] > totais[j + 1]) {
+                    float tmpTotal = totais[j];
+                    totais[j] = totais[j + 1];
+                    totais[j + 1] = tmpTotal;
 
-                if (totalAtual > totalProximo) {
-
-                    ListaSequencial<Produto> tempLista = arrayListas[j];
+                    ListaSequencial<Produto> tmpLista = arrayListas[j];
                     arrayListas[j] = arrayListas[j + 1];
-                    arrayListas[j + 1] = tempLista;
+                    arrayListas[j + 1] = tmpLista;
 
-                    String tempNome = mercados[j];
+                    String tmpNome = mercados[j];
                     mercados[j] = mercados[j + 1];
-                    mercados[j + 1] = tempNome;
+                    mercados[j + 1] = tmpNome;
                 }
             }
         }
