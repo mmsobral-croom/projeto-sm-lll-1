@@ -1,5 +1,6 @@
 import esd.ListaSequencial;
 import sm.*;
+import esd.TabHash;
 
 import java.util.Scanner;
 
@@ -9,6 +10,10 @@ public class Main {
     static Bistek bistek = new Bistek();
     static ListaSequencial<Produto>[] arrayListas;
     static String[] nomesMercados = {"Giassi", "Fort", "Bistek"};
+
+    static TabHash<String, ListaSequencial<Produto>> cacheGiassi = new TabHash<>();
+    static TabHash<String, ListaSequencial<Produto>> cacheFort = new TabHash<>();
+    static TabHash<String, ListaSequencial<Produto>> cacheBistek = new TabHash<>();
 
     public static void main(String[] args) {
         Scanner inp = new Scanner(System.in);
@@ -51,19 +56,30 @@ public class Main {
         }
     }
 
-    private static ListaSequencial<Produto> criarCestaCompra(Supermercado mercado, ListaSequencial<String> listaNomeProdutos) {
+    private static ListaSequencial<Produto> criarCestaCompra(Supermercado mercado, ListaSequencial<String> listaNomeProdutos, TabHash<String, ListaSequencial<Produto>> cache) {
         ListaSequencial<Produto> cestaCompra = new ListaSequencial<>();
 
         for (int i = 0; i < listaNomeProdutos.comprimento(); i++) {
             String nomeProduto = listaNomeProdutos.obtem(i);
 
-            Supermercado.Resultado resultado = mercado.busca(nomeProduto);
+            ListaSequencial<Produto> produtosEncontrados;
 
-            if (resultado == null) continue;
+            if (cache.contem(nomeProduto)) {
+                produtosEncontrados = cache.obtem(nomeProduto);
+            } else {
+                Supermercado.Resultado resultado = mercado.busca(nomeProduto);
+                if (resultado == null) continue;
+                produtosEncontrados = new ListaSequencial<>();
+                for (Produto p : resultado) {
+                    produtosEncontrados.adiciona(p);
+                }
+                cache.adiciona(nomeProduto, produtosEncontrados);
+            }
 
             Produto maisBarato = null;
 
-            for (Produto atual : resultado) {
+            for (int j = 0; j < produtosEncontrados.comprimento(); j++) {
+                Produto atual = produtosEncontrados.obtem(j);
                 if (!atual.isDisponivel()) continue;
                 if (maisBarato == null || atual.getPreco() < maisBarato.getPreco()) {
                     maisBarato = atual;
@@ -85,10 +101,11 @@ public class Main {
         return total;
     }
 
-    private static void criarListasSupermercados(ListaSequencial<String> listaNomeProdutos) {
+    private static void criarListasSupermercados(ListaSequencial<String> listaNomeProdutos ) {
         Supermercado[] mercados = {giassi, fort, bistek};
+        TabHash<String, ListaSequencial<Produto>>[] caches = new TabHash[]{cacheGiassi, cacheFort, cacheBistek};
         for (int i = 0; i < mercados.length; i++) {
-            arrayListas[i] = criarCestaCompra(mercados[i], listaNomeProdutos);
+            arrayListas[i] = criarCestaCompra(mercados[i], listaNomeProdutos, caches[i]);
         }
     }
 
