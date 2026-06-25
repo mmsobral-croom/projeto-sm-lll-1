@@ -73,6 +73,38 @@ public class Main {
 
         for (int i = 0; i < listaNomeProdutos.comprimento(); i++) {
             String nomeProduto = listaNomeProdutos.obtem(i);
+            if (verificaEAN(nomeProduto)) { //se for só números, trata como EAN em vez de nome
+                ListaSequencial<Produto> listaEan = new ListaSequencial<>();
+
+                // varre todos os produtos já cacheados procurando pelo EAN
+                ListaSequencial<ListaSequencial<Produto>> todasListas = cache.valores();
+                for (int j = 0; j < todasListas.comprimento(); j++) {
+                    ListaSequencial<Produto> lista = todasListas.obtem(j);
+                    for (int k = 0; k < lista.comprimento(); k++) {
+                        Produto p = lista.obtem(k);
+                        if (nomeProduto.equals(p.getEan())) {
+                            listaEan.adiciona(p);
+                        }
+                    }
+                }
+
+                if (listaEan.esta_vazia()) {
+                    IO.println("O EAN " + nomeProduto + " não foi encontrado no cache do " + mercado.getClass().getSimpleName());
+                    continue;
+                }
+
+                Produto maisBaratoEan = null;
+                for (int j = 0; j < listaEan.comprimento(); j++) {
+                    Produto atual = listaEan.obtem(j);
+                    if (atual.isDisponivel() && (maisBaratoEan == null || atual.getPreco() < maisBaratoEan.getPreco())) {
+                        maisBaratoEan = atual;
+                    }
+                }
+                if (maisBaratoEan != null) { //só adiciona se realmente achou o produto pelo EAN
+                    cestaCompra.adiciona(maisBaratoEan);
+                }
+                continue;
+            }
             String[] termos = obterTermos(nomeProduto); //separa os termos da busca: "chocolate branco" vira "chocolate" e "branco"
             ListaSequencial<Produto> produtosEncontrados = null;
             for (String termo : termos) { //busca no cache ou api cada termo da busca
